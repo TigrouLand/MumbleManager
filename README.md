@@ -18,7 +18,7 @@ icesecretwrite=
 ### Installation MumbleManager
 Premièrement, vous devez installer Python 3 ainsi que PIP 3. Généralement disponibles dans les dépôts des principaux systèmes d'exploitations Linux, il vous suffit d'exécuter cette commande avec votre gestionnaire de paquet : `apt install python3 python3-pip`. Le paquet `apt install libbz2-dev` sera de même requis pour la suite.
 
-Ensuite, clonez ce dépôt avec Git, via la commande `git clone https://github.com/TigrouLand/MumbleManager.git`. Rendez-vous dans le répertoire `MumbleManager`, et exécutez la commande suivante afin d'installer les modules Python nécessaires : `pip3 install Ice` et `pip3 install zeroc-ice`.
+Ensuite, clonez ce dépôt avec Git, via la commande `git clone https://github.com/TigrouLand/MumbleManager.git`. Rendez-vous dans le répertoire `MumbleManager`, et exécutez la commande suivante afin d'installer les modules Python nécessaires : `pip3 install -r requirements.txt`.
 
 ### Configuration MumbleManager
 La configuration de MumbleManager s'effectue exclusivement via les variables d'environnement :
