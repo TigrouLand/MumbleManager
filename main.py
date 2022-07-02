@@ -1,4 +1,6 @@
 import os
+import socket
+
 import Ice, sys
 import Murmur
 from pymongo import MongoClient
@@ -57,11 +59,19 @@ if __name__ == "__main__":
 
     ice = Ice.initialize(idd)
 
-    ice.getImplicitContext().put("secret", os.getenv("ICE_KEY"))
+    if os.getenv("ICE_SECRET") is not None:
+        ice.getImplicitContext().put("secret", os.getenv("ICE_SECRET"))
 
     print("Creation of TCP connections via Ice...")
-    meta = Murmur.MetaPrx.checkedCast(ice.stringToProxy(os.getenv("ICE_PROXY")))
-    adapter = ice.createObjectAdapterWithEndpoints("Callback.Client", os.getenv("ICE_CALLBACK"))
+
+    iceHost = os.getenv("ICE_HOST")
+    if os.getenv("ICE_DOCKER") is not None:
+        iceHost = socket.gethostbyname(iceHost)
+
+    icePort = os.getenv("ICE_PORT")
+
+    meta = Murmur.MetaPrx.checkedCast(ice.stringToProxy("Meta:tcp -h %s -p %s" % (iceHost, icePort)))
+    adapter = ice.createObjectAdapterWithEndpoints("Callback.Client", "tcp -h %s" % iceHost)
     adapter.activate()
 
     print("Finding started Mumble servers and adding callbacks to them...")

@@ -22,6 +22,8 @@ Ensuite, clonez ce dépôt avec Git, via la commande `git clone https://github.c
 
 ### Configuration MumbleManager
 La configuration de MumbleManager s'effectue exclusivement via les variables d'environnement :
-* `ICE_KEY` : identifiants que vous avez défini dans la première étape
-* `ICE_PROXY` : adresse proxy de Ice (exemple : `Meta:tcp -h 127.0.0.1 -p 6502` - notez le préfixe `Meta:`)
-* `ICE_CALLBACK` : adresse d'écoute de retour (exemple : `tcp -h 127.0.0.1`)
+* `MONGO_URI` : adresse de connexion à votre base de données MongoDB
+* `ICE_SECRET` : identifiants que vous avez défini dans la première étape
+* `ICE_HOST` : adresse de votre serveur Ice (exemple : `127.0.0.1`)
+* *Si vous êtes sous Docker, vous pouvez spécifier un nom d'hôte à condition d'introduire la variable `ICE_DOCKER` pour utiliser le résolveur DNS de Docker.*
+* `ICE_PORT` : port de votre serveur Ice (exemple : `6502`)
