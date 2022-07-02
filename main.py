@@ -5,6 +5,7 @@ import Ice, sys
 import Murmur
 from pymongo import MongoClient
 
+cache = {}
 
 class ServerCallbackI(Murmur.ServerCallback):
     def __init__(self, server, adapter, database):
@@ -25,28 +26,7 @@ class ServerCallbackI(Murmur.ServerCallback):
             cache[p.session] = linked
         self.setUserLinkedState(p.name, linked)
 
-    def userTextMessage(self, p, msg, current=None):
-        pass
-
-    def channelCreated(self, c, current=None):
-        pass
-
-    def channelRemoved(self, c, current=None):
-        pass
-
-    def channelStateChanged(self, c, current=None):
-        pass
-
-    def userConnected(self, p, current=None):
-        pass
-
-    def userDisconnected(self, p, current=None):
-        pass
-
-
 if __name__ == "__main__":
-    global cache
-
     print("Creating Mongo connection...")
     mongo = MongoClient(host=os.getenv("MONGO_URI"))
 
