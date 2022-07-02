@@ -69,9 +69,10 @@ if __name__ == "__main__":
         iceHost = socket.gethostbyname(iceHost)
 
     icePort = os.getenv("ICE_PORT")
+    iceCallbackHost = os.getenv("ICE_CALLBACK_HOST")
 
     meta = Murmur.MetaPrx.checkedCast(ice.stringToProxy("Meta:tcp -h %s -p %s" % (iceHost, icePort)))
-    adapter = ice.createObjectAdapterWithEndpoints("Callback.Client", "tcp -h %s" % iceHost)
+    adapter = ice.createObjectAdapterWithEndpoints("Callback.Client", "tcp -h %s" % iceCallbackHost)
     adapter.activate()
 
     print("Finding started Mumble servers and adding callbacks to them...")

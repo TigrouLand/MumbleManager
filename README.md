@@ -27,3 +27,4 @@ La configuration de MumbleManager s'effectue exclusivement via les variables d'e
 * `ICE_HOST` : adresse de votre serveur Ice (exemple : `127.0.0.1`)
 * *Si vous êtes sous Docker, vous pouvez spécifier un nom d'hôte à condition d'introduire la variable `ICE_DOCKER` pour utiliser le résolveur DNS de Docker.*
 * `ICE_PORT` : port de votre serveur Ice (exemple : `6502`)
+* `ICE_CALLBACK_HOST` : hôte de callback (exemple : `127.0.0.1`)
