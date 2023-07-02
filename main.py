@@ -1,73 +1,64 @@
-import os
-import socket
+import json
 
-import Ice, sys
+import Ice
 import Murmur
-from pymongo import MongoClient
+import sys
+from flask import Flask, jsonify
 
-cache = {}
+murmurServer = None
+app = Flask(__name__)
 
-class ServerCallbackI(Murmur.ServerCallback):
-    def __init__(self, server, adapter, database):
-        self.adapter = adapter
-        self.server = server
-        self.database = database
 
-    def setUserLinkedState(self, name, linked):
-        self.database.players.find_one_and_update({"name": name}, {"$set": {"linked": linked}})
+@app.route("/links")
+def links():
+    with Ice.initialize(sys.argv) as communicator:
+        base = communicator.stringToProxy("Meta:tcp -h 127.0.0.1 -p 6502")
 
-    def userStateChanged(self, p, current=None):
-        print("State of " + p.name + " changed")
-        linked = p.identity != ""
-        if p.session in cache:
-            if cache[p.session] == linked:
-                return
-        else:
-            cache[p.session] = linked
-        self.setUserLinkedState(p.name, linked)
+        meta = Murmur.MetaPrx.checkedCast(base)
+        if not meta:
+            raise RuntimeError("Invalid proxy")
+
+        servers = meta.getAllServers()
+
+        if len(servers) == 0:
+            return jsonify(
+                status='error',
+                message='no mumble server found'
+            )
+
+        mumbleusers = servers[0].getUsers()
+        userlist = []
+        for i in mumbleusers:
+            user = mumbleusers[i]
+            if user.identity != "" and user.identity is not None:
+                try:
+                    jsonidentity = json.loads(user.identity)
+                    minecraftname = jsonidentity['name']
+                    userlist.append({
+                        "mumbleName": user.name,
+                        "minecraftName": minecraftname,
+                        "linked": True
+                    })
+                except Exception as e:
+                    userlist.append({
+                        "mumbleName": user.name,
+                        "error": repr(e),
+                    })
+            else:
+                userlist.append({
+                    "mumbleName": user.name,
+                    "linked": False
+                })
+
+        try:
+            return jsonify(userlist)
+        except Exception as e:
+            return jsonify(
+                status='error',
+                message=repr(e)
+            )
+
 
 if __name__ == "__main__":
-    print("Creating Mongo connection...")
-    mongo = MongoClient(host=os.getenv("MONGO_URI"))
-
-    print("Initialization of Ice...")
-    prop = Ice.createProperties(sys.argv)
-    prop.setProperty("Ice.ImplicitContext", "Shared")
-
-    idd = Ice.InitializationData()
-    idd.properties = prop
-
-    ice = Ice.initialize(idd)
-
-    if os.getenv("ICE_SECRET") is not None:
-        ice.getImplicitContext().put("secret", os.getenv("ICE_SECRET"))
-
-    print("Creation of TCP connections via Ice...")
-
-    iceHost = os.getenv("ICE_HOST")
-    if os.getenv("ICE_DOCKER") is not None:
-        iceHost = socket.gethostbyname(iceHost)
-
-    icePort = os.getenv("ICE_PORT")
-    iceCallbackHost = os.getenv("ICE_CALLBACK_HOST")
-
-    meta = Murmur.MetaPrx.checkedCast(ice.stringToProxy("Meta:tcp -h %s -p %s" % (iceHost, icePort)))
-    adapter = ice.createObjectAdapterWithEndpoints("Callback.Client", "tcp -h %s" % iceCallbackHost)
-    adapter.activate()
-
-    print("Finding started Mumble servers and adding callbacks to them...")
-    for server in meta.getBootedServers():
-        print("- Server discovered:")
-        print(server)
-        serverR = Murmur.ServerCallbackPrx.uncheckedCast(
-            adapter.addWithUUID(ServerCallbackI(server, adapter, mongo.get_database("tigrouland"))))
-        server.addCallback(serverR)
-
-    print("MumbleManager started successfully.")
-    try:
-        ice.waitForShutdown()
-    except KeyboardInterrupt:
-        print("Aborting...")
-
-    ice.shutdown()
-    print("Ice connection successfully terminated.")
+    from waitress import serve
+    serve(app, host="127.0.0.1", port=8090)
