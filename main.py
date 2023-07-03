@@ -1,4 +1,5 @@
 import json
+import re
 
 import Ice
 import Murmur
@@ -40,8 +41,12 @@ def links():
                         "linked": True
                     })
                 except Exception as e:
+                    result = re.search(r"\"name\":\"(.*)\",", user.identity)
+                    minecraftname = result.group(1)
                     userlist.append({
                         "mumbleName": user.name,
+                        "minecraftName": minecraftname,
+                        "linked": True,
                         "error": repr(e),
                     })
             else:
